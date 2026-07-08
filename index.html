@@ -1,1 +1,274 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة الأستاذة منار عادل الشافعي - ملكة الكيمياء</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- استدعاء مكتبات Firebase السحابية الرسمية -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
+    <style>
+        :root {
+            --primary-color: #0f172a;
+            --accent-color: #2563eb;
+            --neon-chemical: #06b6d4;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --card-bg: #1e293b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; scroll-behavior: smooth; }
+        body { background-color: var(--primary-color); color: var(--text-light); overflow-x: hidden; }
+
+        header { position: fixed; top: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); z-index: 1000; border-bottom: 1px solid rgba(37, 99, 235, 0.2); }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 20px; }
+        .logo { font-size: 24px; font-weight: 900; color: var(--text-light); text-decoration: none; }
+        .logo span { color: var(--neon-chemical); }
+        .nav-links { display: flex; list-style: none; gap: 30px; }
+        .nav-links a { color: var(--text-light); text-decoration: none; font-weight: 700; transition: 0.3s; }
+        .nav-links a:hover { color: var(--neon-chemical); }
+
+        .hero { padding: 180px 20px 100px 20px; display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; gap: 50px; }
+        .hero-content { flex: 1; }
+        .hero-badge { background: rgba(37, 99, 235, 0.2); border: 1px solid var(--accent-color); padding: 6px 16px; border-radius: 50px; font-size: 14px; color: var(--neon-chemical); display: inline-block; margin-bottom: 20px; }
+        .hero-content h1 { font-size: 48px; line-height: 1.4; margin-bottom: 20px; font-weight: 900; }
+        .hero-content h1 span { background: linear-gradient(to left, #06b6d4, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-content p { color: var(--text-muted); font-size: 18px; margin-bottom: 30px; line-height: 1.8; }
+        
+        .btn-cta { background: linear-gradient(135deg, var(--accent-color), var(--neon-chemical)); color: white; padding: 12px 35px; border-radius: 8px; text-decoration: none; font-weight: 700; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); transition: 0.3s; display: inline-block; cursor: pointer; border: none; }
+        .btn-cta:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(6, 182, 212, 0.6); }
+
+        .hero-image { flex: 1; text-align: center; }
+        .hero-image img { width: 100%; max-width: 450px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 2px solid rgba(6, 182, 212, 0.3); }
+
+        .features { max-width: 1200px; margin: 80px auto; padding: 0 20px; }
+        .section-title { text-align: center; margin-bottom: 60px; }
+        .section-title h2 { font-size: 36px; font-weight: 900; position: relative; display: inline-block; padding-bottom: 15px; }
+        .section-title h2::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 4px; background: var(--neon-chemical); border-radius: 2px; }
+        
+        .grid-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .feature-card { background: var(--card-bg); padding: 40px 30px; border-radius: 15px; text-align: center; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05); }
+        .feature-card i { font-size: 40px; color: var(--neon-chemical); margin-bottom: 20px; }
+        .feature-card h3 { font-size: 22px; margin-bottom: 15px; }
+        .feature-card p { color: var(--text-muted); font-size: 15px; line-height: 1.6; }
+
+        .courses { background: #111827; padding: 80px 20px; }
+        .courses-container { max-width: 1200px; margin: 0 auto; }
+        .grid-courses { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }
+        
+        .course-card { background: var(--card-bg); border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.2); position: relative; border: 1px solid rgba(255,255,255,0.05); }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        
+        .course-body { padding: 25px; }
+        .course-badge { background: rgba(6, 182, 212, 0.15); color: var(--neon-chemical); padding: 4px 12px; border-radius: 4px; font-size: 13px; font-weight: 700; display: inline-block; margin-bottom: 15px; }
+        .course-body h3 { font-size: 20px; margin-bottom: 10px; }
+        .course-body p { color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+
+        .delete-btn {
+            position: absolute; top: 10px; right: 10px; background: rgba(239, 68, 68, 0.9);
+            color: white; border: none; width: 32px; height: 32px; border-radius: 50%;
+            cursor: pointer; z-index: 10; display: none; align-items: center; justify-content: center;
+        }
+
+        .admin-section { max-width: 800px; margin: 80px auto; padding: 40px; background: #111827; border-radius: 20px; border: 1px dashed var(--neon-chemical); display: none;}
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 700; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; background: var(--primary-color); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; }
+
+        .cta-banner { max-width: 1200px; margin: 80px auto; background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(6, 182, 212, 0.2)); border: 1px solid var(--neon-chemical); padding: 60px 40px; border-radius: 20px; text-align: center; }
+        footer { background: #090d16; padding: 30px 20px; text-align: center; color: var(--text-muted); font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <header>
+        <div class="nav-container">
+            <a href="#" class="logo">Chemistry<span>.Plus</span></a>
+            <ul class="nav-links">
+                <li><a href="#hero">الرئيسية</a></li>
+                <li><a href="#features">مميزاتنا</a></li>
+                <li><a href="#courses">المحاضرات السحابية</a></li>
+                <li><a onclick="openAdmin()" style="cursor: pointer; color: var(--neon-chemical);"><i class="fa-solid fa-lock"></i> لوحة المِس</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero" id="hero">
+        <div class="hero-content">
+            <span class="hero-badge"><i class="fa-solid fa-atom"></i> منصة حية ومباشرة لجميع الطلاب</span>
+            <h1>منصة الكيمياء للأستاذة <br><span>منار عادل الشافعي</span></h1>
+            <p>الآن مرفوعة بالكامل على سيرفرات جوجل السحابية! تابع محاضراتك وتجاربك التفاعلية أولاً بأول من أي جهاز وفي أي مكان[span_6](start_span)[span_6](end_span).</p>
+            <a href="#courses" class="btn-cta">تصفح المحاضرات الآن <i class="fa-solid fa-chevron-left" style="margin-right: 8px;"></i></a>
+        </div>
+        <div class="hero-image">
+            <img src="https://images.unsplash.com/photo-1532187643603-ba119ca4109e?auto=format&fit=crop&q=80&w=600" alt="Chemistry Lab">
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features" id="features">
+        <div class="section-title"><h2>لماذا تتعلم مع مس منار؟</h2></div>
+        <div class="grid-features">
+            <div class="feature-card"><i class="fa-solid fa-flask-vial"></i><h3>تجارب تفاعلية</h3><p>شرح المعادلات الصعبة بفيديوهات وتجارب عملية دقيقة بتشوفها بعينك عشان تثبت في دماغك.</p></div>
+            <div class="feature-card"><i class="fa-solid fa-graduation-cap"></i><h3>امتحانات دورية</h3><p>اختبارات إلكترونية بعد كل محاضرة بنظام التابلت الحديث لتقييم مستواك وتجهيزك للامتحان النهائي.</p></div>
+            <div class="feature-card"><i class="fa-solid fa-circle-check"></i><h3>متابعة مستمرة</h3><p>تقارير دورية لولي الأمر لمعرفة مستوى الطالب، وحل فوري لكل الأسئلة الصعبة على مدار 24 ساعة.</p></div>
+        </div>
+    </section>
+
+    <!-- Dynamic Courses Section -->
+    <section class="courses" id="courses">
+        <div class="courses-container">
+            <div class="section-title">
+                <h2>المحاضرات المتاحة على السيرفر (<span id="count">0</span>)</h2>
+            </div>
+            <div class="grid-courses" id="lecturesContainer">
+                <!-- الفيديوهات هتظهر هنا لكل الطلاب في نفس اللحظة سحابياً -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Hidden Admin Panel -->
+    <section class="admin-section" id="adminPanel">
+        <div class="section-title" style="margin-bottom: 30px;">
+            <h2 style="font-size: 26px; color: var(--neon-chemical);">لوحة تحكم الأستاذة منار (Firebase الحقيقي) 🔐</h2>
+            <p style="color: var(--text-muted); margin-top: 10px;">عند الرفع من هنا، سيتم الحفظ في سيرفرات جوجل ويراها الطلاب فوراً[span_7](start_span)[span_7](end_span)!</p>
+        </div>
+        <form id="uploadForm">
+            <div class="form-group"><label>عنوان المحاضرة</label><input type="text" id="lecTitle" placeholder="مثال: الباب الأول - شرح الحديد" required></div>
+            <div class="form-group">
+                <label>الباب / الفصل</label>
+                <select id="lecBadge">
+                    <option value="الباب الأول">الباب الأول</option>
+                    <option value="الباب الثاني">الباب الثاني</option>
+                    <option value="الباب الثالث">الباب الثالث</option>
+                    <option value="الباب الرابع">الباب الرابع</option>
+                    <option value="الكيمياء العضوية">الكيمياء العضوية</option>
+                </select>
+            </div>
+            <div class="form-group"><label>رابط فيديو اليوتيوب</label><input type="url" id="lecUrl" placeholder="https://www.youtube.com/watch?v=..." required></div>
+            <div class="form-group"><label>وصف المحاضرة</label><textarea id="lecDesc" rows="3" placeholder="اكتب نبذة عن المحاضرة للطلاب..." required></textarea></div>
+            <button type="submit" class="btn-cta" style="width: 100%;">نشر وإرسال للسيرفر فوراً 🚀</button>
+        </form>
+    </section>
+
+    <section class="cta-banner">
+        <h2>جاهز تقفل الكيمياء مع مِس منار؟</h2>
+        <p style="color: var(--text-muted); margin-bottom: 25px;">احجز مقعدك الآن في مجموعات السنتر أو الأونلاين قبل اكتمال العدد.</p>
+        <a href="https://wa.me/201000000000" class="btn-cta" style="background: #25d366; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);"><i class="fa-brands fa-whatsapp" style="margin-left: 8px;"></i> تواصل معنا عبر الواتساب</a>
+    </section>
+
+    <footer><p>جميع الحقوق محفوظة © 2026 لمنصة الأستاذة منار عادل الشافعي | تم التطوير سحابياً بواسطة أحمد عادل</p></footer>
+
+    <script>
+        // ⚠️ ضَع بيانات الـ Firebase الخاصة بمشروعك هنا ليعمل الموقع أونلاين:
+        const firebaseConfig = {
+  apiKey: "AIzaSyCqO1dZclx9qwWgTi_e3I3rNvq_BqWIavQ",
+  authDomain: "manar-chemistry.firebaseapp.com",
+  projectId: "manar-chemistry",
+  storageBucket: "manar-chemistry.firebasestorage.app",
+  messagingSenderId: "103471924207",
+  appId: "1:103471924207:web:cc08aadf02e5bb3ad76c1a",
+  measurementId: "G-YNMZ47JYRE"
+}
+
+        // تهيئة الـ Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const ADMIN_PASSWORD = "123";
+        let isAdminLoggedIn = false;
+
+        function openAdmin() {
+            if(isAdminLoggedIn) { document.getElementById('adminPanel').style.display = 'block'; document.getElementById('adminPanel').scrollIntoView(); return; }
+            let pass = prompt("الرجاء إدخال كلمة مرور الإدارة لفتح لوحة الرفع:");
+            if(pass === ADMIN_PASSWORD) {
+                isAdminLoggedIn = true;
+                document.getElementById('adminPanel').style.display = 'block';
+                document.getElementById('adminPanel').scrollIntoView();
+                loadLectures(); 
+            } else if(pass !== null) { alert("كلمة المرور خاطئة!"); }
+        }
+
+        function getYouTubeId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // قراءة حية وفورية من سيرفر Firebase (تحديث تلقائي عند الطلاب أول بأول)
+        function loadLectures() {
+            db.collection("lectures").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+                const container = document.getElementById('lecturesContainer');
+                container.innerHTML = '';
+                document.getElementById('count').innerText = snapshot.size;
+
+                if(snapshot.empty) {
+                    container.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 40px 0;">لا توجد محاضرات في السيرفر حالياً.</p>';
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const lec = doc.data();
+                    const lecId = doc.id;
+                    const card = document.createElement('div');
+                    card.className = 'course-card';
+                    card.innerHTML = `
+                        <button class="delete-btn" id="del-${lecId}" onclick="deleteLecture('${lecId}')"><i class="fa-solid fa-trash"></i></button>
+                        <div class="video-container"><iframe src="https://www.youtube.com/embed/${lec.videoId}" allowfullscreen></iframe></div>
+                        <div class="course-body">
+                            <span class="course-badge">${lec.badge}</span>
+                            <h3>${lec.title}</h3>
+                            <p>${lec.desc}</p>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                    if(isAdminLoggedIn) { document.getElementById(`del-${lecId}`).style.display = 'flex'; }
+                });
+            });
+        }
+
+        // رفع محاضرة جديدة مباشرة لقاعدة بيانات Firebase
+        const form = document.getElementById('uploadForm');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const title = document.getElementById('lecTitle').value;
+            const badge = document.getElementById('lecBadge').value;
+            const url = document.getElementById('lecUrl').value;
+            const desc = document.getElementById('lecDesc').value;
+            const videoId = getYouTubeId(url);
+            
+            if(!videoId) { alert('رابط اليوتيوب غير صحيح!'); return; }
+
+            db.collection("lectures").add({
+                title: title,
+                badge: badge,
+                videoId: videoId,
+                desc: desc,
+                createdAt: new Date()
+            }).then(() => {
+                form.reset();
+                window.scrollTo({ top: document.getElementById('courses').offsetTop, behavior: 'smooth' });
+            }).catch(err => alert("حدث خطأ أثناء الرفع: " + err.message));
+        });
+
+        // حذف محاضرة من السيرفر نهائياً
+        function deleteLecture(id) {
+            if(confirm('هل تريد حذف هذه المحاضرة نهائياً من سيرفر المنصة؟')) {
+                db.collection("lectures").doc(id).delete().catch(err => alert(err.message));
+            }
+        }
+
+        // تشغيل التحميل التلقائي أول ما الصفحة تفتح للطلاب
+        document.addEventListener('DOMContentLoaded', loadLectures);
+    </script>
+</body>
+  </html>
